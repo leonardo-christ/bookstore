@@ -53,4 +53,4 @@ jobs:
         with:
           reporter: 'github-pr-review'
         env:
-          DATABASE_URL: postgres://user:password@localhost:5432/bookstore_db
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
