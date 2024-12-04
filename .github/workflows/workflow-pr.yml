@@ -5,13 +5,13 @@ on: [pull_request]
 jobs:
   qa:
     name: Quality check
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:13
         ports:
-          - 5432:5432
+          - 15432:5432
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -53,4 +53,4 @@ jobs:
         with:
           reporter: 'github-pr-review'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATABASE_URL: postgres://user:password@localhost:5432/bookstore_db
