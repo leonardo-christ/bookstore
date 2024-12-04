@@ -11,11 +11,21 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -25,13 +35,20 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade poetry
 
-    - name: View poetry --help
-      run: poetry --help
-
     - name: Install dependencies
       shell: bash
       run: python -m poetry install
 
-    - name: Test
+    - name: Verify PostgreSQL is running
+      run: |
+        pg_isready -h localhost -p 5432 -U postgres
+      env:
+        PGPASSWORD: postgres
+
+    - name: Run migrations
+      run: |
+        poetry run python manage.py migrate
+
+    - name: Run tests
       run: |
         poetry run python manage.py test

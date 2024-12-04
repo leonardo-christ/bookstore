@@ -1,16 +1,30 @@
 name: Python Pull Request Workflow
-on: [pull_request]
-jobs:
 
+on: [pull_request]
+
+jobs:
   qa:
     name: Quality check
-    runs-on: ubuntu-23.04
+    runs-on: ubuntu-18.04
+
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.12
+          python-version: 3.8
+
       - name: Install poetry
         run: |
           pip install -U pip
@@ -19,17 +33,21 @@ jobs:
         env:
           POETRY_VIRTUALENVS_CREATE: false
 
-      - name: View poetry --help
-        run: poetry --help
+      - name: Verify PostgreSQL is running
+        run: |
+          pg_isready -h localhost -p 5432 -U postgres
+        env:
+          PGPASSWORD: postgres
 
-      - name: Install dependencies
-        shell: bash
-        run: python -m poetry install
+      - name: Run migrations
+        run: |
+          poetry run python manage.py migrate
 
       - name: Test
         run: |
           poetry run python manage.py test
-      - name: Wemake Python Stylguide
+
+      - name: Wemake Python Styleguide
         uses: wemake-services/wemake-python-styleguide@0.16.0
         continue-on-error: true
         with:
