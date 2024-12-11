@@ -41,7 +41,18 @@ jobs:
 
     - name: Verify PostgreSQL is running
       run: |
-        pg_isready -h localhost -p 5432 -U postgres
+        for i in {1..30}; do
+          if pg_isready -h localhost -p 5432 -U postgres; then
+            echo "PostgreSQL is ready!"
+            break
+          fi
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+        if ! pg_isready -h localhost -p 5432 -U postgres; then
+          echo "PostgreSQL failed to start in time."
+          exit 1
+        fi
       env:
         PGPASSWORD: postgres
 
