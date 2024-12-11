@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   qa:
     name: Quality check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -18,6 +18,8 @@ jobs:
           POSTGRES_DB: test_db
 
     steps:
+      - name: Wait for PostgreSQL to initialize
+        run: sleep 10
       - uses: actions/checkout@v3
 
       - name: Set up Python
@@ -35,7 +37,7 @@ jobs:
 
       - name: Verify PostgreSQL is running
         run: |
-          pg_isready -h localhost -p 5432 -U postgres
+          pg_isready -h postgres -p 5432 -U postgres
         env:
           PGPASSWORD: postgres
 
